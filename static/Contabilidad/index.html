@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Póster Científico: Gestión y Estructura de los Costos de Producción</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter & Merriweather para rigor académico -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- MathJax para renderizado impecable de ecuaciones matemáticas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                    colors: {
+                        unadBlue: '#004B87',
+                        unadDark: '#002D54',
+                        unadYellow: '#F4B400',
+                        unadOrange: '#E86C00',
+                        slateBg: '#F1F5F9'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Estilos específicos para visualización tipo Póster Científico e Impresión */
+        body {
+            background-color: #cbd5e1;
+            font-family: 'Inter', sans-serif;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .poster-container {
+            max-width: 1440px;
+            margin: 1.5rem auto;
+            background: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .section-header {
+            background: linear-gradient(90deg, #004B87 0%, #0066B2 100%);
+            color: white;
+            border-left: 6px solid #F4B400;
+        }
+
+        .math-box {
+            background: linear-gradient(145deg, #f8fafc 0%, #eff6ff 100%);
+            border: 1px solid #bfdbfe;
+            border-left: 4px solid #004B87;
+        }
+
+        /* Estilos optimizados para exportar a PDF / Imprimir */
+        @media print {
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .poster-container {
+                margin: 0;
+                max-width: 100%;
+                box-shadow: none;
+                border: none;
+            }
+            @page {
+                size: landscape;
+                margin: 0.5cm;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <!-- Barra de Herramientas Superior (No visible al imprimir/exportar PDF) -->
+    <div class="no-print sticky top-0 z-50 bg-slate-900/95 backdrop-blur text-white px-4 py-3 shadow-lg border-b border-slate-700">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <span class="bg-unadYellow text-slate-900 font-bold px-2.5 py-1 rounded text-xs uppercase tracking-wider">Póster Académico</span>
+                <p class="text-sm text-slate-300 hidden sm:block">Vista previa interactiva de alta resolución (Formato A1 / A0 Horizontal)</p>
+            </div>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="toggleSimulation()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-unadYellow"></i>
+                    <span>Simulador de Costos</span>
+                </button>
+                <button onclick="window.print()" class="bg-unadYellow hover:bg-amber-400 text-slate-950 font-bold px-4 py-1.5 rounded-lg text-xs sm:text-sm shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <span>Guardar PDF / Imprimir</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Interactivo: Simulador Práctico del Modelo Matemático -->
+    <div id="simModal" class="no-print hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="font-bold text-lg text-unadBlue flex items-center gap-2">
+                    <i class="fa-solid fa-industry"></i> Simulador Rápido de Acumulación de Costos
+                </h3>
+                <button onclick="toggleSimulation()" class="text-slate-400 hover:text-slate-700 text-xl">&times;</button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">Comprueba en tiempo real las ecuaciones de la Figura 1 del póster ingresando valores en pesos ($ COP):</p>
+            <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Materiales Directos (MD)</label>
+                    <input type="number" id="inMD" value="15000000" oninput="calcCosts()" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-unadBlue outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Mano de Obra Directa (MOD)</label>
+                    <input type="number" id="inMOD" value="8500000" oninput="calcCosts()" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-unadBlue outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Costos Indirectos (CIF)</label>
+                    <input type="number" id="inCIF" value="4500000" oninput="calcCosts()" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-unadBlue outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Unidades Producidas</label>
+                    <input type="number" id="inUnits" value="1000" oninput="calcCosts()" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-unadBlue outline-none">
+                </div>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-600">Costo Primo ($CP = MD + MOD$):</span>
+                    <span id="outCP" class="font-bold text-unadBlue">$23,500,000</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">Costo de Conversión ($CC = MOD + CIF$):</span>
+                    <span id="outCC" class="font-bold text-unadBlue">$13,000,000</span>
+                </div>
+                <div class="flex justify-between border-t pt-2">
+                    <span class="font-semibold text-slate-800">Costo Producción Periodo ($CPP$):</span>
+                    <span id="outCPP" class="font-extrabold text-emerald-700">$28,000,000</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="font-semibold text-slate-800">Costo Unitario ($CU$):</span>
+                    <span id="outCU" class="font-extrabold text-unadOrange">$28,000 / und</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL DEL PÓSTER CIENTÍFICO -->
+    <main class="poster-container rounded-none sm:rounded-xl overflow-hidden border border-slate-300">
+        
+        <!-- ENCABEZADO INSTITUCIONAL Y TÍTULO -->
+        <header class="bg-gradient-to-r from-unadDark via-unadBlue to-[#005fa8] text-white p-6 sm:p-8 relative overflow-hidden">
+            <!-- Patrón geométrico decorativo sutil -->
+            <div class="absolute right-0 top-0 h-full w-1/3 opacity-10 pointer-events-none">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="h-full w-full object-cover">
+                    <path fill="#F4B400" d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.6,90,-16.3,88.5,-0.9C87,14.6,81.4,29.2,72.9,41.8C64.4,54.4,53,65,39.7,72.2C26.4,79.4,11.2,83.2,-3.4,89.1C-18,95,-36,103,-50.2,96.8C-64.4,90.6,-74.8,70.2,-81.8,51.2C-88.8,32.2,-92.4,14.6,-90.3,-2.1C-88.2,-18.8,-80.4,-34.6,-69.6,-47.5C-58.8,-60.4,-45,-70.4,-30.5,-77.3C-16,-84.2,-0.8,-88,14.1,-86.3C29,-84.6,30.6,-83.6,44.7,-76.4Z" transform="translate(100 100)" />
+                </svg>
+            </div>
+
+            <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+                <!-- Escudo / Identidad Institucional UNAD con Logo Vectorial Oficial -->
+                <div class="flex flex-col sm:flex-row items-center gap-4 bg-white/10 backdrop-blur-sm p-3.5 rounded-xl border border-white/20 shrink-0">
+                    <!-- Logo UNAD recreado en SVG de alta resolución -->
+                    <div class="bg-white px-3.5 py-2.5 rounded-lg shadow-md flex items-center justify-center shrink-0">
+                        <svg width="215" height="58" viewBox="0 0 430 116" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo Universidad Nacional Abierta y a Distancia UNAD">
+                            <!-- Arco superior de 5 puntos naranjas sobre la U -->
+                            <circle cx="24" cy="30" r="5" fill="#F08218"/>
+                            <circle cx="38" cy="18" r="5" fill="#F08218"/>
+                            <circle cx="56" cy="13" r="5" fill="#F08218"/>
+                            <circle cx="74" cy="18" r="5" fill="#F08218"/>
+                            <circle cx="88" cy="30" r="5" fill="#F08218"/>
+                            
+                            <!-- Letra U (Serif institucional azul petróleo) -->
+                            <path d="M12 42 H36 V46 H30 V82 C30 96 40 103 55 103 C70 103 80 95 80 81 V46 H73 V42 H94 V46 H87 V81 C87 100 73 111 53 111 C32 111 19 100 19 81 V46 H12 Z" fill="#005975"/>
+                            
+                            <!-- Letra N (Serif institucional azul petróleo) -->
+                            <path d="M97 44 H111 L135 76 V48 H129 V44 H145 V48 H140 V88 H135 L108 52 V84 H114 V88 H97 V84 H103 V48 H97 Z" fill="#005975"/>
+                            
+                            <!-- Letras AD (Sans-serif bold amarillo institucional) -->
+                            <text x="145" y="88" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="60" fill="#F5B301" letter-spacing="-2">AD</text>
+                            
+                            <!-- Arco inferior de 5 puntos naranjas debajo de AD -->
+                            <circle cx="155" cy="95" r="4.5" fill="#F08218"/>
+                            <circle cx="169" cy="105" r="4.5" fill="#F08218"/>
+                            <circle cx="187" cy="109" r="4.5" fill="#F08218"/>
+                            <circle cx="205" cy="105" r="4.5" fill="#F08218"/>
+                            <circle cx="219" cy="95" r="4.5" fill="#F08218"/>
+                            
+                            <!-- Texto Institucional Derecho -->
+                            <text x="242" y="59" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="18.5" fill="#005975">Universidad Nacional</text>
+                            <text x="242" y="82" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="18.5" fill="#F08218">Abierta y a Distancia</text>
+                        </svg>
+                    </div>
+                    <div class="text-center sm:text-left">
+                        <p class="text-xs font-bold uppercase tracking-wider text-unadYellow">Universidad Nacional Abierta y a Distancia</p>
+                        <p class="text-xs text-blue-100 font-medium">Escuela de Ciencias Básicas, Tecnología e Ingeniería (ECBTI)</p>
+                        <p class="text-[11px] text-blue-200 mt-0.5">Curso: <strong>Contabilidad y Costos</strong> | Código: <strong>212018A_2204</strong></p>
+                    </div>
+                </div>
+
+                <!-- Título Principal de la Investigación -->
+                <div class="text-center lg:text-left flex-1">
+                    <div class="inline-block bg-unadYellow/20 border border-unadYellow/50 text-unadYellow text-[11px] font-bold uppercase tracking-widest px-3 py-0.5 rounded-full mb-2">
+                        Póster Científico
+                    </div>
+                    <h1 class="font-serif text-xl sm:text-2xl lg:text-3xl font-bold leading-tight text-white drop-shadow-sm">
+                        Análisis Integral de los Elementos del Costo de Producción y su Incidencia en la Determinación del Estado de Costos y la Rentabilidad Industrial
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Barra de Autoría y Tutoría -->
+            <div class="relative z-10 mt-6 pt-4 border-t border-white/20 flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm">
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-user-graduate text-unadYellow"></i>
+                        <strong>Autor:</strong> José German Cortes Corzo <span class="text-blue-200">(C.C. 1.033.747.105)</span>
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-chalkboard-user text-unadYellow"></i>
+                        <strong>Tutora:</strong> Claudia Yazmine Beltrán
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 text-blue-100 font-medium">
+                    <i class="fa-solid fa-calendar-check text-unadYellow"></i>
+                    <span>Periodo Académico 2026</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- CUERPO DEL PÓSTER: LAYOUT DE 3 COLUMNAS ASIMÉTRICAS (3 - 6 - 3) -->
+        <div class="p-5 sm:p-6 bg-slate-100 grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            
+            <!-- ========================================== -->
+            <!-- COLUMNA IZQUIERDA (3/12): CONTEXTO Y BASES -->
+            <!-- ========================================== -->
+            <div class="lg:col-span-3 flex flex-col gap-5">
+                
+                <!-- 2. RESUMEN & 3. PALABRAS CLAVE -->
+                <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    <div class="section-header px-4 py-2.5 flex items-center justify-between">
+                        <h2 class="font-bold text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines text-unadYellow"></i> 1. Resumen
+                        </h2>
+                        <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded font-semibold">ES</span>
+                    </div>
+                    <div class="p-4 text-xs sm:text-[13px] leading-relaxed text-slate-700 text-justify space-y-3">
+                        <p>
+                            El presente trabajo de investigación aplicada analiza la estructura, clasificación y comportamiento de los costos de producción dentro de las organizaciones del sector industrial, tomando como referencia los estándares internacionales de información financiera (<strong>NIIF</strong>) y la contabilidad analítica moderna. A través de una revisión documental y el modelamiento matemático de transacciones industriales, se desglosan los tres elementos fundamentales del costo: <strong>Materiales Directos (MD)</strong>, <strong>Mano de Obra Directa (MOD)</strong> y <strong>Costos Indirectos de Fabricación (CIF)</strong>.
+                        </p>
+                        <p>
+                            Asimismo, se examina su integración en el Estado de Costos de Productos Vendidos y su impacto directo sobre el margen bruto en el Estado de Resultados. Los hallazgos demuestran que una asignación precisa de los costos primos y de conversión permite optimizar la fijación de precios de venta, controlar las variaciones presupuestarias y garantizar la sostenibilidad financiera de la empresa manufacturera frente a entornos competitivos.
+                        </p>
+                        <div class="pt-2 border-t border-slate-100">
+                            <p class="font-bold text-unadBlue text-[11px] uppercase mb-1.5">Palabras Clave:</p>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="bg-blue-50 text-unadBlue border border-blue-200 px-2 py-0.5 rounded-md text-[11px] font-medium">Contabilidad de costos</span>
+                                <span class="bg-blue-50 text-unadBlue border border-blue-200 px-2 py-0.5 rounded-md text-[11px] font-medium">Costos de producción</span>
+                                <span class="bg-blue-50 text-unadBlue border border-blue-200 px-2 py-0.5 rounded-md text-[11px] font-medium">Costos indirectos de fabricación</span>
+                                <span class="bg-blue-50 text-unadBlue border border-blue-200 px-2 py-0.5 rounded-md text-[11px] font-medium">Estado de costos</span>
+                                <span class="bg-blue-50 text-unadBlue border border-blue-200 px-2 py-0.5 rounded-md text-[11px] font-medium">Rentabilidad industrial</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. ABSTRACT & KEYWORDS -->
+                <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-800 text-white border-l-4 border-unadYellow px-4 py-2 flex items-center justify-between">
+                        <h2 class="font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-language text-unadYellow"></i> 2. Abstract
+                        </h2>
+                        <span class="text-[10px] bg-white/15 px-2 py-0.5 rounded font-semibold">EN</span>
+                    </div>
+                    <div class="p-4 text-xs leading-relaxed text-slate-600 italic text-justify space-y-2.5 bg-slate-50/60">
+                        <p>
+                            This applied research paper analyzes the structure, classification, and behavior of production costs within industrial sector organizations, referencing International Financial Reporting Standards (IFRS) and modern analytical accounting. Through a documentary review and mathematical modeling of industrial transactions, the three fundamental cost elements are broken down: Direct Materials (DM), Direct Labor (DL), and Manufacturing Overhead (MOH). Furthermore, their integration into the Statement of Cost of Goods Sold and their direct impact on gross margin in the Income Statement are examined. The findings demonstrate that an accurate allocation of prime and conversion costs optimizes sales pricing, controls budget variances, and ensures the financial sustainability of manufacturing enterprises in competitive environments.
+                        </p>
+                        <p class="not-italic text-[11px] text-slate-700 pt-1 border-t border-slate-200">
+                            <strong class="text-slate-900">Keywords:</strong> Cost accounting; Cost statement; Industrial profitability; Manufacturing overhead; Production costs.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 5. INTRODUCCIÓN -->
+                <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex-1">
+                    <div class="section-header px-4 py-2.5">
+                        <h2 class="font-bold text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-compass text-unadYellow"></i> 3. Introducción
+                        </h2>
+                    </div>
+                    <div class="p-4 text-xs sm:text-[13px] leading-relaxed text-slate-700 text-justify space-y-2.5">
+                        <p>
+                            En el entorno económico actual, las empresas industriales enfrentan el desafío constante de maximizar su eficiencia operativa sin comprometer la calidad de sus productos. A diferencia de las empresas comerciales —que adquieren bienes terminados para su reventa—, las organizaciones manufactureras transforman materias primas mediante procesos físicos o químicos complejos. En este contexto, la contabilidad financiera tradicional resulta insuficiente para la toma de decisiones internas, haciendo indispensable el uso de la <strong>contabilidad de costos</strong> como sistema de información gerencial (Arredondo González, 2016).
+                        </p>
+                        <p>
+                            Comprender la naturaleza de los costos de producción permite responder preguntas críticas: <em>¿Cuánto cuesta realmente fabricar una unidad? ¿Cuál es el punto de equilibrio operativo? ¿Cómo afecta una variación en el precio de la materia prima a la utilidad neta?</em> El correcto reconocimiento de los desembolsos capitalizables (costos del producto) frente a los desembolsos del periodo (gastos operativos) constituye la piedra angular para elaborar estados financieros fidedignos bajo el marco normativo vigente (Lavi, 2016; Pacheco Bautista, 2019).
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- COLUMNA CENTRAL (6/12): NÚCLEO DE RESULTADOS -->
+            <!-- ========================================== -->
+            <div class="lg:col-span-6 flex flex-col gap-5">
+                
+                <!-- JUSTIFICACIÓN Y OBJETIVOS (Panel Superior Compacto) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 6. Justificación -->
+                    <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="section-header px-4 py-2">
+                            <h2 class="font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-scale-balanced text-unadYellow"></i> 4. Justificación
+                            </h2>
+                        </div>
+                        <div class="p-3.5 text-xs leading-relaxed text-slate-700 text-justify space-y-2">
+                            <p>
+                                La rigurosidad en el cálculo de costos es una herramienta estratégica de supervivencia empresarial. Subestimar costos unitarios conlleva a fijar precios por debajo del umbral de rentabilidad, descapitalizando la compañía; sobreestimarlos por una mala distribución de los <strong>CIF</strong> genera pérdida de competitividad (Guarnizo Cuéllar & Cárdenas, 2015).
+                            </p>
+                            <p>
+                                Desde la ingeniería y gestión de operaciones, dominar el <strong>Estado de Costos de Productos Vendidos</strong> permite detectar cuellos de botella, mermas anormales y tiempos improductivos, traduciendo la teoría en indicadores accionables.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- 7. Objetivos -->
+                    <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="section-header px-4 py-2">
+                            <h2 class="font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-bullseye text-unadYellow"></i> 5. Objetivos de Investigación
+                            </h2>
+                        </div>
+                        <div class="p-3.5 text-xs leading-relaxed text-slate-700 space-y-2">
+                            <div class="bg-amber-50/80 border-l-4 border-unadYellow p-2 rounded-r">
+                                <p class="font-bold text-slate-900 text-[11px] uppercase">Objetivo General:</p>
+                                <p class="text-[11.5px]">Analizar la estructura conceptual, matemática y contable de los elementos del costo de producción, determinando su impacto directo en el Estado de Costos y la rentabilidad industrial.</p>
+                            </div>
+                            <ul class="space-y-1 text-[11.5px]">
+                                <li class="flex items-start gap-1.5">
+                                    <span class="bg-unadBlue text-white font-bold rounded-full w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
+                                    <span><strong>Identificar y clasificar</strong> los componentes de manufactura (MD, MOD, CIF) frente a los gastos operativos.</span>
+                                </li>
+                                <li class="flex items-start gap-1.5">
+                                    <span class="bg-unadBlue text-white font-bold rounded-full w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
+                                    <span><strong>Establecer las relaciones matemáticas</strong> entre Costo Primo, Costo de Conversión y Costo Total de Producción.</span>
+                                </li>
+                                <li class="flex items-start gap-1.5">
+                                    <span class="bg-unadBlue text-white font-bold rounded-full w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
+                                    <span><strong>Evaluar la incidencia</strong> del costo de ventas en el margen bruto y operativo del Estado de Resultados.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- 8. RESULTADOS CENTRALES (TABLA 1 + FIGURA 1 + TABLA 2) -->
+                <section class="bg-white rounded-xl shadow-md border-2 border-unadBlue/20 overflow-hidden flex-1 flex flex-col">
+                    <div class="bg-gradient-to-r from-unadDark to-unadBlue text-white px-5 py-3 flex items-center justify-between border-b-4 border-unadYellow">
+                        <h2 class="font-extrabold text-sm sm:text-base uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-unadYellow"></i> 6. Resultados y Modelamiento Analítico
+                        </h2>
+                        <span class="text-[11px] bg-unadYellow text-slate-900 font-bold px-2.5 py-0.5 rounded-full">Núcleo Temático</span>
+                    </div>
+
+                    <div class="p-4 sm:p-5 space-y-5 flex-1 flex flex-col justify-between">
+                        
+                        <!-- TABLA 1: TAXONOMÍA DE ELEMENTOS DEL COSTO -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="font-bold text-xs sm:text-sm text-unadDark flex items-center gap-2">
+                                    <span class="bg-unadBlue text-white px-2 py-0.5 rounded text-xs">Tabla 1</span>
+                                    Taxonomía Técnica de los Elementos del Costo de Producción
+                                </h3>
+                            </div>
+                            <div class="overflow-x-auto rounded-lg border border-slate-200">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
+                                            <th class="py-2 px-3">Elemento del Costo</th>
+                                            <th class="py-2 px-2 text-center">Sigla</th>
+                                            <th class="py-2 px-3">Definición Técnica y Alcance</th>
+                                            <th class="py-2 px-3">Ejemplos Industriales</th>
+                                            <th class="py-2 px-3">Tratamiento (NIIF)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200 text-[11.5px]">
+                                        <tr class="bg-white hover:bg-blue-50/40">
+                                            <td class="py-2 px-3 font-bold text-unadBlue">Materiales Directos</td>
+                                            <td class="py-2 px-2 text-center"><span class="bg-blue-100 text-unadBlue font-extrabold px-2 py-0.5 rounded">MD</span></td>
+                                            <td class="py-2 px-3 text-slate-700">Insumos principales que se transforman físicamente, plenamente identificables y cuantificables por unidad.</td>
+                                            <td class="py-2 px-3 text-slate-600">Madera en muebles, acero en estructuras, tela en confección.</td>
+                                            <td class="py-2 px-3 font-medium text-emerald-700">Inventariable (Activo corriente hasta su venta).</td>
+                                        </tr>
+                                        <tr class="bg-slate-50/70 hover:bg-blue-50/40">
+                                            <td class="py-2 px-3 font-bold text-unadBlue">Mano de Obra Directa</td>
+                                            <td class="py-2 px-2 text-center"><span class="bg-amber-100 text-amber-800 font-extrabold px-2 py-0.5 rounded">MOD</span></td>
+                                            <td class="py-2 px-3 text-slate-700">Esfuerzo físico o mental del personal que transforma la materia prima (salarios + prestaciones).</td>
+                                            <td class="py-2 px-3 text-slate-600">Operarios de maquinaria, ensambladores, soldadores.</td>
+                                            <td class="py-2 px-3 font-medium text-emerald-700">Inventariable (Carga directa a orden/proceso).</td>
+                                        </tr>
+                                        <tr class="bg-white hover:bg-blue-50/40">
+                                            <td class="py-2 px-3 font-bold text-unadBlue">Costos Indirectos de Fabricación</td>
+                                            <td class="py-2 px-2 text-center"><span class="bg-purple-100 text-purple-800 font-extrabold px-2 py-0.5 rounded">CIF</span></td>
+                                            <td class="py-2 px-3 text-slate-700">Erogaciones indispensables de planta no asociables directamente a un producto específico.</td>
+                                            <td class="py-2 px-3 text-slate-600">Pegantes, lubricantes, supervisores, depreciación, servicios de planta.</td>
+                                            <td class="py-2 px-3 font-medium text-emerald-700">Inventariable (Tasas predeterminadas / ABC).</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- FIGURA 1: MODELO MATEMÁTICO DE ACUMULACIÓN DE COSTOS (DIAGRAMA VISUAL) -->
+                        <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                <h3 class="font-bold text-xs sm:text-sm text-unadDark flex items-center gap-2">
+                                    <span class="bg-unadOrange text-white px-2 py-0.5 rounded text-xs">Figura 1</span>
+                                    Modelo Matemático de Acumulación de Costos
+                                </h3>
+                                <span class="text-[11px] text-slate-500 font-medium">Articulación Primo – Conversión – Unitario</span>
+                            </div>
+
+                            <!-- Diagrama de bloques interconectados -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Bloque 1: Costo Primo -->
+                                <div class="math-box rounded-lg p-3 shadow-xs relative">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-bold uppercase text-unadBlue">1. Costo Primo ($CP$)</span>
+                                        <i class="fa-solid fa-layer-group text-unadBlue/40"></i>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 mb-1.5">Costos directos esenciales para iniciar la producción:</p>
+                                    <div class="bg-white rounded px-2.5 py-1.5 text-center font-bold text-slate-900 border border-blue-100 text-xs sm:text-sm">
+                                        $$CP = MD + MOD$$
+                                    </div>
+                                </div>
+
+                                <!-- Bloque 2: Costo de Conversión -->
+                                <div class="math-box rounded-lg p-3 shadow-xs relative">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-bold uppercase text-unadBlue">2. Costo de Conversión ($CC$)</span>
+                                        <i class="fa-solid fa-gears text-unadBlue/40"></i>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 mb-1.5">Esfuerzo fabril para transformar materia prima:</p>
+                                    <div class="bg-white rounded px-2.5 py-1.5 text-center font-bold text-slate-900 border border-blue-100 text-xs sm:text-sm">
+                                        $$CC = MOD + CIF$$
+                                    </div>
+                                </div>
+
+                                <!-- Bloque 3: Costo Producción Periodo -->
+                                <div class="bg-gradient-to-r from-unadDark to-unadBlue text-white rounded-lg p-3 shadow-sm">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-bold uppercase text-unadYellow">3. Costo Producción Periodo ($CPP$)</span>
+                                        <i class="fa-solid fa-industry text-unadYellow/70"></i>
+                                    </div>
+                                    <p class="text-[11px] text-blue-100 mb-1.5">Suma total de recursos invertidos en fábrica:</p>
+                                    <div class="bg-white/10 backdrop-blur rounded px-2.5 py-1.5 text-center font-bold text-white border border-white/20 text-xs sm:text-sm">
+                                        $$CPP = MD + MOD + CIF$$
+                                    </div>
+                                </div>
+
+                                <!-- Bloque 4: Costo Unitario -->
+                                <div class="bg-gradient-to-r from-amber-500 to-unadOrange text-white rounded-lg p-3 shadow-sm">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-bold uppercase text-slate-950">4. Costo Unitario ($CU$)</span>
+                                        <i class="fa-solid fa-tag text-slate-900/60"></i>
+                                    </div>
+                                    <p class="text-[11px] text-amber-50 mb-1.5">Base para fijación de precios y valoración:</p>
+                                    <div class="bg-slate-900/20 rounded px-2.5 py-1 text-center font-bold text-white border border-white/25 text-xs sm:text-sm">
+                                        $$CU = \frac{CPP}{\text{Unidades Producidas}}$$
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TABLA 2: ESTRUCTURA DINÁMICA DEL ESTADO DE COSTOS -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="font-bold text-xs sm:text-sm text-unadDark flex items-center gap-2">
+                                    <span class="bg-emerald-700 text-white px-2 py-0.5 rounded text-xs">Tabla 2</span>
+                                    Estructura Dinámica del Estado de Costos y Conexión con el Estado de Resultados
+                                </h3>
+                            </div>
+                            <div class="overflow-x-auto rounded-lg border border-slate-200">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
+                                            <th class="py-2 px-3 w-1/4">Fase Fabril</th>
+                                            <th class="py-2 px-3 w-2/5">Ecuación Contable Estructural</th>
+                                            <th class="py-2 px-3">Impacto Financiero</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200 text-[11.5px]">
+                                        <tr class="bg-white">
+                                            <td class="py-2 px-3 font-bold text-slate-800">1. Consumo Materiales</td>
+                                            <td class="py-2 px-3 font-mono text-[11px] text-unadBlue bg-blue-50/40">$\text{II MD} + \text{Compras Netas} - \text{IF MD} = \text{MD Utilizados}$</td>
+                                            <td class="py-2 px-3 text-slate-600">Determina el flujo real de insumos hacia la línea de producción.</td>
+                                        </tr>
+                                        <tr class="bg-slate-50/70">
+                                            <td class="py-2 px-3 font-bold text-slate-800">2. Costo Incurrido</td>
+                                            <td class="py-2 px-3 font-mono text-[11px] text-unadBlue bg-blue-50/40">$\text{MD Utilizados} + \text{MOD} + \text{CIF} = \text{Costo Total Prod.}$</td>
+                                            <td class="py-2 px-3 text-slate-600">Mide la eficiencia operativa de la planta en el periodo.</td>
+                                        </tr>
+                                        <tr class="bg-white">
+                                            <td class="py-2 px-3 font-bold text-slate-800">3. Prod. Terminados</td>
+                                            <td class="py-2 px-3 font-mono text-[11px] text-unadBlue bg-blue-50/40">$\text{Costo Prod.} + \text{II PP} - \text{IF PP} = \text{Costo Prod. Terminados}$</td>
+                                            <td class="py-2 px-3 text-slate-600">Valoración del inventario listo para la comercialización.</td>
+                                        </tr>
+                                        <tr class="bg-slate-50/70">
+                                            <td class="py-2 px-3 font-bold text-slate-800">4. Costo Ventas ($CV$)</td>
+                                            <td class="py-2 px-3 font-mono text-[11px] text-unadBlue bg-blue-50/40">$\text{CPT} + \text{II PT} - \text{IF PT} = \text{Costo de Ventas}$</td>
+                                            <td class="py-2 px-3 text-slate-600">Se traslada al <strong>Estado de Resultados</strong> restando ingresos.</td>
+                                        </tr>
+                                        <tr class="bg-emerald-50/70">
+                                            <td class="py-2 px-3 font-bold text-emerald-900">5. Margen Bruto ($MB$)</td>
+                                            <td class="py-2 px-3 font-mono text-[11px] text-emerald-900">$\text{Ventas} - \text{CV} = \text{Utilidad Bruta}$</td>
+                                            <td class="py-2 px-3 font-semibold text-emerald-800">$MB(\%) = \left(\frac{\text{Utilidad Bruta}}{\text{Ventas}}\right) \times 100$</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- COLUMNA DERECHA (3/12): CIERRE Y REFERENCIAS -->
+            <!-- ========================================== -->
+            <div class="lg:col-span-3 flex flex-col gap-5">
+                
+                <!-- ESQUEMA DE FLUJO FINANCIERO VISUAL -->
+                <section class="bg-gradient-to-br from-unadDark to-slate-900 text-white rounded-xl shadow-sm p-4 border border-slate-700">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-unadYellow mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project"></i> Articulación Contable
+                    </h3>
+                    <div class="space-y-2 text-xs">
+                        <div class="bg-white/10 border border-white/15 rounded-lg p-2.5 flex items-center justify-between">
+                            <span><strong class="text-unadYellow">Planta:</strong> MD + MOD + CIF</span>
+                            <i class="fa-solid fa-arrow-down text-unadYellow"></i>
+                        </div>
+                        <div class="bg-white/10 border border-white/15 rounded-lg p-2.5 flex items-center justify-between">
+                            <span><strong class="text-sky-300">Inventario:</strong> Prod. Proceso &rarr; Terminado</span>
+                            <i class="fa-solid fa-arrow-down text-sky-300"></i>
+                        </div>
+                        <div class="bg-emerald-500/20 border border-emerald-400/30 rounded-lg p-2.5 flex items-center justify-between">
+                            <span><strong class="text-emerald-300">Resultados:</strong> Ventas &minus; CV = Utilidad Bruta</span>
+                            <i class="fa-solid fa-check-circle text-emerald-300"></i>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 9. CONCLUSIONES -->
+                <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="section-header px-4 py-2.5">
+                        <h2 class="font-bold text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-lightbulb text-unadYellow"></i> 7. Conclusiones
+                        </h2>
+                    </div>
+                    <div class="p-4 text-xs sm:text-[12.5px] leading-relaxed text-slate-700 space-y-3">
+                        <div class="flex items-start gap-2.5">
+                            <div class="bg-unadBlue text-white font-bold rounded-lg w-6 h-6 flex items-center justify-center shrink-0 mt-0.5 text-xs shadow-xs">1</div>
+                            <p class="text-justify">
+                                <strong class="text-slate-900">Control Estratégico de Elementos:</strong> La desagregación rigurosa entre MD, MOD y CIF permite identificar dónde se concentran las mayores cargas financieras, facilitando planes de reducción de desperdicios y optimización de tiempos estándar (Alvarado Verdín, 2016).
+                            </p>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <div class="bg-unadBlue text-white font-bold rounded-lg w-6 h-6 flex items-center justify-center shrink-0 mt-0.5 text-xs shadow-xs">2</div>
+                            <p class="text-justify">
+                                <strong class="text-slate-900">Incidencia Directa en la Rentabilidad:</strong> El Costo de Productos Vendidos es el principal rubro deducible de los ingresos operacionales; cualquier desviación no controlada en los CIF o materias primas erosiona de inmediato la utilidad bruta.
+                            </p>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <div class="bg-unadBlue text-white font-bold rounded-lg w-6 h-6 flex items-center justify-center shrink-0 mt-0.5 text-xs shadow-xs">3</div>
+                            <p class="text-justify">
+                                <strong class="text-slate-900">Soporte para la Toma de Decisiones:</strong> La articulación entre el Estado de Costos y el Estado de Resultados brinda una herramienta objetiva para evaluar líneas de producto, fijar precios competitivos y asegurar valor económico sostenible.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 10. BIBLIOGRAFÍA (NORMAS APA 7.ª EDICIÓN) -->
+                <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex-1 flex flex-col">
+                    <div class="bg-slate-800 text-white border-l-4 border-unadYellow px-4 py-2.5">
+                        <h2 class="font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-book-bookmark text-unadYellow"></i> 8. Bibliografía (APA 7.ª Ed.)
+                        </h2>
+                    </div>
+                    <div class="p-4 text-[11px] leading-snug text-slate-600 space-y-2.5 flex-1">
+                        <p class="pl-4 -indent-4">
+                            Alvarado Verdín, V. M. (2016). <em>Ingeniería de costos</em>. Grupo Editorial Patria. <span class="text-unadBlue break-all">https://elibro-net.bibliotecavirtual.unad.edu.co/es/ereader/unad/40454?page=117</span>
+                        </p>
+                        <p class="pl-4 -indent-4">
+                            Arredondo González, M. M. (2016). <em>Contabilidad y análisis de costos</em>. Grupo Editorial Patria. <span class="text-unadBlue break-all">https://elibro-net.bibliotecavirtual.unad.edu.co/es/ereader/unad/40440?page=75</span>
+                        </p>
+                        <p class="pl-4 -indent-4">
+                            De, E. D. (2023). <em>Razones Financieras</em> [Objeto virtual de información OVI]. Repositorio Institucional UNAD. <span class="text-unadBlue break-all">https://repository.unad.edu.co/handle/10596/55130</span>
+                        </p>
+                        <p class="pl-4 -indent-4">
+                            Guarnizo Cuéllar, F., & Cárdenas, S. M. (2015). <em>Costos por órdenes de producción y por procesos</em> (1.ª ed.). Ediciones Unisalle. <span class="text-unadBlue break-all">https://elibro-net.bibliotecavirtual.unad.edu.co/es/ereader/unad/222009?page=1</span>
+                        </p>
+                        <p class="pl-4 -indent-4">
+                            Lavi, M. R. (2016). <em>IFRS 13 fair value measurement</em>. Wiley. <span class="text-unadBlue break-all">https://elibro-net.bibliotecavirtual.unad.edu.co/es/ereader/unadenglish/184488?page=37</span>
+                        </p>
+                        <p class="pl-4 -indent-4">
+                            Pacheco Bautista, F. A. (2019). <em>Módulo costos de producción</em>. Ediciones USTA. <span class="text-unadBlue break-all">https://elibro-net.bibliotecavirtual.unad.edu.co/es/ereader/unad/126085?page=1</span>
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+
+        <!-- PIE DE PÁGINA DEL PÓSTER -->
+        <footer class="bg-unadDark text-blue-200 px-6 py-3 text-[11px] flex flex-wrap items-center justify-between gap-2 border-t-2 border-unadYellow">
+            <span><strong>UNAD</strong> • Escuela de Ciencias Básicas, Tecnología e Ingeniería (ECBTI) • Contabilidad y Costos (212018A_2204)</span>
+            <span>Autor: <strong>José German Cortes Corzo</strong> • Tutora: <strong>Claudia Yazmine Beltrán</strong> • 2026</span>
+        </footer>
+    </main>
+
+    <!-- Lógica del Simulador Interactivo -->
+    <script>
+        function toggleSimulation() {
+            const modal = document.getElementById('simModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function formatCOP(val) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                maximumFractionDigits: 0
+            }).format(val);
+        }
+
+        function calcCosts() {
+            const md = parseFloat(document.getElementById('inMD').value) || 0;
+            const mod = parseFloat(document.getElementById('inMOD').value) || 0;
+            const cif = parseFloat(document.getElementById('inCIF').value) || 0;
+            const units = parseFloat(document.getElementById('inUnits').value) || 1;
+
+            const cp = md + mod;
+            const cc = mod + cif;
+            const cpp = md + mod + cif;
+            const cu = units > 0 ? (cpp / units) : 0;
+
+            document.getElementById('outCP').textContent = formatCOP(cp);
+            document.getElementById('outCC').textContent = formatCOP(cc);
+            document.getElementById('outCPP').textContent = formatCOP(cpp);
+            document.getElementById('outCU').textContent = formatCOP(cu) + ' / und';
+        }
+    </script>
+</body>
+</html>
